@@ -1,0 +1,7 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+src/credit_transaction_data_engineer_project/kafka/data/
+src/credit_transaction_data_engineer_project/fraud_model/*.csv
+dist/
