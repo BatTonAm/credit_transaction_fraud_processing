@@ -13,7 +13,7 @@ def delivery_report(err, msg):
         print(f"Record {msg.key()} successfully produced to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}")
 
 def produce_message(topic, record: dict):
-    key=record.get("customer_id","")
+    key=record.get("transaction_id","")
     value=json.dumps(record)
     producer.produce(
         topic,
