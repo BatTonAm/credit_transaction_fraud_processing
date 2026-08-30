@@ -145,7 +145,7 @@ else:
     print("No fraud predictions in the sample — try a larger sample size.")
 
 with open(Path(__file__).parent / "threshold.json", "w") as f:
-    json.dump({"threshold": chosen_threshold}, f)
+    json.dump({"threshold": float(chosen_threshold)}, f)
 with open(Path(__file__).parent / "fraud_model.pkl", "wb") as f:
     pickle.dump(model, f)
 with open(Path(__file__).parent / "encoders.pkl", "wb") as f:
