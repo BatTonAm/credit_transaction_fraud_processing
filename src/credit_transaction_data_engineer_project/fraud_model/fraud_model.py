@@ -30,7 +30,12 @@ X_train, X_temp, y_train, y_temp = train_test_split(
 )
 X_val, X_test, y_val, y_test = train_test_split(
     X_temp, y_temp, test_size=0.5, stratify=y_temp, random_state=42
-) 
+)
+
+# Captured before encoding overwrites X_train in place — Unity Catalog
+# requires a real input_example (not just type hints) to infer a model
+# signature, and it needs to be raw/unencoded since predict() encodes it itself.
+input_example = X_train.head(5).copy()
 
 encoders = {}
 for col in X_train.select_dtypes(include="object").columns:
@@ -146,6 +151,7 @@ else:
 
 with open(Path(__file__).parent / "threshold.json", "w") as f:
     json.dump({"threshold": float(chosen_threshold)}, f)
+input_example.to_csv(Path(__file__).parent / "input_example.csv", index=False)
 with open(Path(__file__).parent / "fraud_model.pkl", "wb") as f:
     pickle.dump(model, f)
 with open(Path(__file__).parent / "encoders.pkl", "wb") as f:
