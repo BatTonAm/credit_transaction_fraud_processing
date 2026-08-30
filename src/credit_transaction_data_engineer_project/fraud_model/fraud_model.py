@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-
+import pickle
+import json
 import shap
 shap.initjs()
 from sklearn.model_selection import train_test_split
@@ -14,40 +15,23 @@ from sklearn.metrics import precision_recall_curve
 df = pd.read_csv(Path(__file__).parent / "sample_data.csv")
 print(df.head())
 
-# transaction_time is near-unique per row (down to the second), so 
-# encoding it directly is guaranteed to break the moment train/val/test are
-# split, and it throws away the actually useful signal anyway. Extract
-# hour-of-day and day-of-week since these recur regardless of calendar
-# date, so they generalize to live data in a way a raw timestamp can't.
 df["transaction_time"] = pd.to_datetime(df["transaction_time"])
 df["transaction_hour"] = df["transaction_time"].dt.hour
 df["transaction_dayofweek"] = df["transaction_time"].dt.dayofweek
 
 
-
-# merchant_id dropped now that merchant_risk_level is available directly —
-# keeping both would let the model fit to per-merchant sampling noise
-# instead of the real, generalizable risk_level signal.
 drop_cols = ["transaction_id", "customer_id", "transaction_time", "merchant_id"]
 data = df.drop(columns=drop_cols)
 X = data.drop(columns=["is_fraud"])
 y = data["is_fraud"]
 
-# Three-way split: train fits the trees, validation drives early stopping
-# and the max_depth search below, test is touched once at the very end so
-# nothing about it ever influences a modeling decision.
-# stratify=y keeps the ~2.3% fraud ratio consistent across all three splits.
 X_train, X_temp, y_train, y_temp = train_test_split(
     X, y, test_size=0.4, stratify=y, random_state=42
 )
 X_val, X_test, y_val, y_test = train_test_split(
     X_temp, y_temp, test_size=0.5, stratify=y_temp, random_state=42
-)  # 60% train / 20% val / 20% test overall
+) 
 
-# Encoders are fit on X_train only, then applied (not re-fit) to X_val/X_test —
-# fitting before splitting would leak val/test categories into the mapping.
-# Each fitted encoder is kept in `encoders` so the same mapping can be
-# replayed later on new, live data.
 encoders = {}
 for col in X_train.select_dtypes(include="object").columns:
     le = LabelEncoder()
@@ -56,13 +40,9 @@ for col in X_train.select_dtypes(include="object").columns:
     X_test[col] = le.transform(X_test[col].astype(str))
     encoders[col] = le
 
-# Fraud is ~2.3% of transactions here — scale_pos_weight reweights the loss
-# so the model doesn't just learn to always predict "not fraud".
+
 scale_pos_weight = (y_train == 0).sum() / (y_train == 1).sum()
 
-# Empirical max_depth search: try each candidate, let early stopping pick
-# its own tree count against validation, keep whichever depth scores best
-# on validation. Test set is never touched here.
 from sklearn.metrics import (
     average_precision_score,
     classification_report,
@@ -110,13 +90,6 @@ print(confusion_matrix(y_test, y_pred))
 print("\nClassification report:")
 print(classification_report(y_test, y_pred, target_names=["not_fraud", "fraud"]))
 
-# The 0.5 cutoff above is arbitrary — scale_pos_weight shifts predicted
-# probabilities upward, so 0.5 is likely too low a bar for "call it fraud".
-# F1 weights a missed fraud case and a false alarm equally, which usually
-# isn't true in practice — missing fraud is typically the costlier mistake.
-# F-beta with beta=2 weights recall twice as important as precision instead,
-# so it's used as the actual final threshold; F1 is kept alongside only for
-# comparison.
 precisions, recalls, thresholds = precision_recall_curve(y_test, y_pred_proba)
 
 
@@ -141,8 +114,6 @@ for t in np.arange(0.1, 0.95, 0.05):
 print(f"\nF1-optimal threshold:  {f1_threshold:.3f} (precision={f1_p:.3f}, recall={f1_r:.3f}, f1={f1_val:.3f})")
 print(f"F2-optimal threshold:  {f2_threshold:.3f} (precision={f2_p:.3f}, recall={f2_r:.3f}, f2={f2_val:.3f})")
 
-# F2 is the final choice — recall matters more than precision for fraud, so
-# this is the threshold actually used, not F1 or the raw 0.5 default.
 chosen_threshold = f2_threshold
 y_pred_final = (y_pred_proba >= chosen_threshold).astype(int)
 
@@ -152,15 +123,10 @@ print(confusion_matrix(y_test, y_pred_final))
 print("\nClassification report:")
 print(classification_report(y_test, y_pred_final, target_names=["not_fraud", "fraud"]))
 
-# SHAP: TreeExplainer is the fast, exact explainer for tree models like
-# XGBoost. A sample keeps this fast and the summary plot readable — using
-# the full test set would work too, just slower and more cluttered to view.
 shap_sample = X_test.sample(n=min(2000, len(X_test)), random_state=42)
 explainer = shap.TreeExplainer(model)
 shap_values = explainer(shap_sample)
 
-# Global view: which features matter most overall, and whether high/low
-# values of each push predictions toward fraud or away from it.
 shap.summary_plot(shap_values, shap_sample, show=False)
 plt.tight_layout()
 plt.savefig(Path(__file__).parent / "shap_summary.png")
@@ -177,3 +143,10 @@ if len(fraud_idx) > 0:
     print("Saved SHAP waterfall plot to shap_waterfall_example.png")
 else:
     print("No fraud predictions in the sample — try a larger sample size.")
+
+with open(Path(__file__).parent / "threshold.json", "w") as f:
+    json.dump({"threshold": chosen_threshold}, f)
+with open(Path(__file__).parent / "fraud_model.pkl", "wb") as f:
+    pickle.dump(model, f)
+with open(Path(__file__).parent / "encoders.pkl", "wb") as f:
+    pickle.dump(encoders, f)
