@@ -1,0 +1,158 @@
+<svg viewBox="0 0 1700 980" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c9962c"/>
+    </marker>
+    <marker id="arrowNavy" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1b3a5c"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1700" height="980" fill="#ffffff"/>
+
+  <text x="850" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#14213d">Credit Transaction Fraud Detection Platform</text>
+  <text x="850" y="66" text-anchor="middle" font-size="14" fill="#5b6b7c">End to end data flow from source events to consumption</text>
+
+  <!-- Column headers -->
+  <g font-size="14" font-weight="700" fill="#ffffff">
+    <rect x="40"  y="100" width="230" height="34" rx="4" fill="#1b3a5c"/>
+    <text x="155" y="122" text-anchor="middle">SOURCES</text>
+
+    <rect x="330" y="100" width="230" height="34" rx="4" fill="#1b3a5c"/>
+    <text x="445" y="122" text-anchor="middle">BRONZE</text>
+
+    <rect x="620" y="100" width="230" height="34" rx="4" fill="#1b3a5c"/>
+    <text x="735" y="122" text-anchor="middle">SILVER</text>
+
+    <rect x="910" y="100" width="330" height="34" rx="4" fill="#1b3a5c"/>
+    <text x="1075" y="122" text-anchor="middle">GOLD</text>
+
+    <rect x="1300" y="100" width="360" height="34" rx="4" fill="#1b3a5c"/>
+    <text x="1480" y="122" text-anchor="middle">CONSUMPTION</text>
+  </g>
+
+  <!-- Sources -->
+  <g font-size="13" fill="#14213d">
+    <rect x="40" y="160" width="230" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="155" y="184" text-anchor="middle" font-weight="600">Local Kafka Producer</text>
+    <text x="155" y="202" text-anchor="middle" font-size="11" fill="#5b6b7c">Python, Confluent Cloud</text>
+
+    <rect x="40" y="234" width="230" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="155" y="258" text-anchor="middle" font-weight="600">Reference Data Bootstrap</text>
+    <text x="155" y="276" text-anchor="middle" font-size="11" fill="#5b6b7c">Customers and merchants, JSON</text>
+  </g>
+
+  <!-- Bronze -->
+  <g font-size="13" fill="#14213d">
+    <rect x="330" y="160" width="230" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="445" y="184" text-anchor="middle" font-weight="600">raw_transactions</text>
+    <text x="445" y="202" text-anchor="middle" font-size="11" fill="#5b6b7c">Streaming ingest from Kafka</text>
+
+    <rect x="330" y="234" width="230" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="445" y="258" text-anchor="middle" font-weight="600">raw_customers / raw_merchants</text>
+    <text x="445" y="276" text-anchor="middle" font-size="11" fill="#5b6b7c">Batch ingest</text>
+  </g>
+
+  <!-- Silver -->
+  <g font-size="13" fill="#14213d">
+    <rect x="620" y="160" width="230" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="735" y="184" text-anchor="middle" font-weight="600">standardized_transactions</text>
+    <text x="735" y="202" text-anchor="middle" font-size="11" fill="#5b6b7c">Validated, joined to merchant risk</text>
+
+    <rect x="620" y="234" width="230" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="735" y="258" text-anchor="middle" font-weight="600">customer / merchant</text>
+    <text x="735" y="276" text-anchor="middle" font-size="11" fill="#5b6b7c">Deduplicated dimension sources</text>
+  </g>
+
+  <!-- Gold -->
+  <g font-size="13" fill="#14213d">
+    <rect x="910" y="160" width="330" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="1075" y="184" text-anchor="middle" font-weight="600">scored_transactions</text>
+    <text x="1075" y="202" text-anchor="middle" font-size="11" fill="#5b6b7c">Per transaction fraud prediction</text>
+
+    <rect x="910" y="234" width="330" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="1075" y="258" text-anchor="middle" font-weight="600">customer_velocity_alerts</text>
+    <text x="1075" y="276" text-anchor="middle" font-size="11" fill="#5b6b7c">Windowed transaction frequency</text>
+
+    <rect x="910" y="308" width="330" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="1075" y="332" text-anchor="middle" font-weight="600">dim_customer / dim_merchant</text>
+    <text x="1075" y="350" text-anchor="middle" font-size="11" fill="#5b6b7c">Descriptive dimension tables</text>
+  </g>
+
+  <!-- Consumption -->
+  <g font-size="13" fill="#14213d">
+    <rect x="1300" y="160" width="360" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="1480" y="184" text-anchor="middle" font-weight="600">Fraud &amp; Business Metrics Dashboard</text>
+    <text x="1480" y="202" text-anchor="middle" font-size="11" fill="#5b6b7c">Daily reporting, two tabs</text>
+
+    <rect x="1300" y="234" width="360" height="56" rx="6" fill="#f4f6f8" stroke="#1b3a5c" stroke-width="1.2"/>
+    <text x="1480" y="258" text-anchor="middle" font-weight="600">Real Time Fraud &amp; Velocity Monitoring</text>
+    <text x="1480" y="276" text-anchor="middle" font-size="11" fill="#5b6b7c">Operational alerting view</text>
+  </g>
+
+  <!-- Main flow arrows -->
+  <g stroke="#c9962c" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <line x1="270" y1="188" x2="326" y2="188"/>
+    <line x1="270" y1="262" x2="326" y2="262"/>
+    <line x1="560" y1="188" x2="616" y2="188"/>
+    <line x1="560" y1="262" x2="616" y2="262"/>
+    <line x1="850" y1="188" x2="906" y2="188"/>
+    <line x1="850" y1="262" x2="906" y2="336"/>
+    <line x1="1240" y1="188" x2="1296" y2="188"/>
+    <line x1="1240" y1="262" x2="1296" y2="262"/>
+  </g>
+
+  <!-- ML lane -->
+  <rect x="40" y="420" width="1200" height="150" rx="8" fill="#fbf6ea" stroke="#c9962c" stroke-width="1.2"/>
+  <text x="60" y="444" font-size="14" font-weight="700" fill="#8a6512">MODEL TRAINING AND REGISTRATION</text>
+
+  <g font-size="13" fill="#14213d">
+    <rect x="60" y="462" width="230" height="70" rx="6" fill="#ffffff" stroke="#c9962c" stroke-width="1.2"/>
+    <text x="175" y="490" text-anchor="middle" font-weight="600">XGBoost Training</text>
+    <text x="175" y="508" text-anchor="middle" font-size="11" fill="#5b6b7c">Local, self generated dataset</text>
+
+    <rect x="330" y="462" width="230" height="70" rx="6" fill="#ffffff" stroke="#c9962c" stroke-width="1.2"/>
+    <text x="445" y="490" text-anchor="middle" font-weight="600">MLflow Packaging</text>
+    <text x="445" y="508" text-anchor="middle" font-size="11" fill="#5b6b7c">pyfunc wrapper, signature, threshold</text>
+
+    <rect x="600" y="462" width="260" height="70" rx="6" fill="#ffffff" stroke="#c9962c" stroke-width="1.2"/>
+    <text x="730" y="490" text-anchor="middle" font-weight="600">Unity Catalog Model Registry</text>
+    <text x="730" y="508" text-anchor="middle" font-size="11" fill="#5b6b7c">credit_transactions.gold.fraud_model</text>
+  </g>
+
+  <g stroke="#c9962c" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <line x1="290" y1="497" x2="326" y2="497"/>
+    <line x1="560" y1="497" x2="596" y2="497"/>
+  </g>
+  <path d="M860,497 C920,497 960,420 1010,364" stroke="#c9962c" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="900" y="415" font-size="11" fill="#8a6512">spark_udf inference</text>
+
+  <!-- Batch jobs lane -->
+  <rect x="1300" y="420" width="360" height="150" rx="8" fill="#eef2f6" stroke="#1b3a5c" stroke-width="1.2"/>
+  <text x="1320" y="444" font-size="14" font-weight="700" fill="#1b3a5c">SCHEDULED BATCH JOBS</text>
+
+  <g font-size="13" fill="#14213d">
+    <rect x="1320" y="462" width="320" height="42" rx="5" fill="#ffffff" stroke="#1b3a5c" stroke-width="1"/>
+    <text x="1480" y="481" text-anchor="middle" font-weight="600">daily_fraud_metrics</text>
+    <text x="1480" y="497" text-anchor="middle" font-size="10" fill="#5b6b7c">and daily_business_metrics</text>
+
+    <rect x="1320" y="514" width="320" height="42" rx="5" fill="#ffffff" stroke="#1b3a5c" stroke-width="1"/>
+    <text x="1480" y="533" text-anchor="middle" font-weight="600">kafka_health_check</text>
+    <text x="1480" y="549" text-anchor="middle" font-size="10" fill="#5b6b7c">Streaming freshness monitor</text>
+  </g>
+
+  <path d="M1140,336 C1220,336 1220,462 1316,483" stroke="#1b3a5c" stroke-width="2" fill="none" stroke-dasharray="5,4" marker-end="url(#arrowNavy)"/>
+  <path d="M1075,364 C1075,410 1300,460 1316,535" stroke="#1b3a5c" stroke-width="2" fill="none" stroke-dasharray="5,4" marker-end="url(#arrowNavy)"/>
+
+  <!-- Governance band -->
+  <rect x="40" y="630" width="1620" height="60" rx="8" fill="#14213d"/>
+  <text x="850" y="666" text-anchor="middle" font-size="15" font-weight="700" fill="#ffffff">Azure Databricks Lakehouse &#8226; Unity Catalog Governance &#8226; ADLS Gen2 Storage &#8226; Azure Key Vault Secrets</text>
+
+  <!-- Notes -->
+  <g font-size="12" fill="#5b6b7c">
+    <text x="40" y="730">All bronze, silver and gold tables are managed through Lakeflow Declarative Pipelines, defined declaratively with row level data</text>
+    <text x="40" y="750">quality expectations. Batch jobs and the health check are scheduled independently through Databricks Jobs, with failure and</text>
+    <text x="40" y="770">staleness notifications routed by email. Infrastructure for jobs and pipelines is additionally captured as a Databricks Asset</text>
+    <text x="40" y="790">Bundle, allowing the platform configuration to be reviewed and versioned alongside the application code.</text>
+  </g>
+</svg>
