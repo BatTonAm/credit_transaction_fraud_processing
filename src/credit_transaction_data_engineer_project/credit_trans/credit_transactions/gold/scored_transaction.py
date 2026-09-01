@@ -1,9 +1,10 @@
 from pyspark.sql.functions import col
 import mlflow
-
+from pyspark import pipelines as dp
 @dp.table(
     name="credit_transactions.gold.scored_transactions",
     comment="per transaction fraud predictions from the registered model",
+    partition_cols=["transaction_date"],
     table_properties={
         "delta.autoOptimize.optimizeWrite": "true",
         "delta.autoOptimize.autoCompact": "true",
@@ -23,12 +24,12 @@ def scored_transactions():
         "transaction_hour", "transaction_dayofweek",
     ]
 
-    df = dp.read_stream("credit_transactions.silver.transactions")
+    df = dp.read_stream("credit_transactions.silver.credit_transactions")
 
     scored_trans= (df
         .withColumn("fraud_prediction", model_udf(*[col(c) for c in feature_cols]))
         .select(
-            "transaction_id", "customer_id", "merchant_id", "transaction_time",
+            "transaction_id", "customer_id", "merchant_id", "transaction_time", "transaction_date",
             *feature_cols,
             "fraud_prediction",
         )

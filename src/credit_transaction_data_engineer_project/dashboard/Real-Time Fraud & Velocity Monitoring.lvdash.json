@@ -1,0 +1,1536 @@
+{
+  "datasets": [
+    {
+      "name": "f0f7bc5c",
+      "displayName": "customer_velocity_alerts",
+      "config": {
+        "source": "credit_transactions.gold.customer_velocity_alerts",
+        "measures": [
+          {
+            "name": "alert_count",
+            "expr": "COUNT(*)",
+            "displayName": "Alert Count"
+          },
+          {
+            "name": "total_transactions_flagged",
+            "expr": "COALESCE(SUM(source.transaction_count), 0)",
+            "displayName": "Total Transactions Flagged"
+          }
+        ],
+        "version": "1.1",
+        "dimensions": [
+          {
+            "name": "window_start",
+            "expr": "source.window_start"
+          },
+          {
+            "name": "window_end",
+            "expr": "source.window_end"
+          },
+          {
+            "name": "customer_id",
+            "expr": "source.customer_id"
+          },
+          {
+            "name": "transaction_count",
+            "expr": "source.transaction_count"
+          },
+          {
+            "name": "high_frequency_flag",
+            "expr": "source.high_frequency_flag"
+          },
+          {
+            "name": "customer_credit_score",
+            "expr": "dim_customer.customer_credit_score"
+          },
+          {
+            "name": "customer_segment",
+            "expr": "dim_customer.customer_segment"
+          },
+          {
+            "name": "customer_home_country",
+            "expr": "dim_customer.customer_home_country"
+          },
+          {
+            "name": "credit_score_band",
+            "expr": "CASE\n  WHEN dim_customer.customer_credit_score >= 750 THEN 'Excellent'\n  WHEN dim_customer.customer_credit_score >= 700 THEN 'Good'\n  WHEN dim_customer.customer_credit_score >= 650 THEN 'Fair'\n  WHEN dim_customer.customer_credit_score IS NULL THEN 'Unknown'\n  ELSE 'Low'\nEND"
+          }
+        ],
+        "joins": [
+          {
+            "name": "dim_customer",
+            "source": "credit_transactions.gold.dim_customer",
+            "on": "source.customer_id = dim_customer.customer_id"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fraud_realtime_monitoring",
+      "displayName": "fraud_realtime_monitoring",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT\n  transaction_id,\n  customer_id,\n  merchant_id,\n  transaction_time,\n  transaction_date,\n  transaction_amount,\n  transaction_type,\n  country,\n  ip_country,\n  card_type,\n  merchant_risk_level,\n  country_mismatch,\n  fraud_prediction,\n  CAST(from_unixtime(900 * FLOOR(unix_timestamp(transaction_time) / 900)) AS TIMESTAMP) AS bucket_15m\nFROM credit_transactions.gold.scored_transactions WHERE transaction_time >= current_timestamp() - INTERVAL 1 DAY\n",
+        "dimensions": [
+          {
+            "name": "transaction_id",
+            "expr": "transaction_id"
+          },
+          {
+            "name": "customer_id",
+            "expr": "customer_id"
+          },
+          {
+            "name": "merchant_id",
+            "expr": "merchant_id"
+          },
+          {
+            "name": "transaction_time",
+            "expr": "transaction_time"
+          },
+          {
+            "name": "transaction_date",
+            "expr": "transaction_date"
+          },
+          {
+            "name": "transaction_amount",
+            "expr": "transaction_amount"
+          },
+          {
+            "name": "transaction_type",
+            "expr": "transaction_type"
+          },
+          {
+            "name": "country",
+            "expr": "country"
+          },
+          {
+            "name": "ip_country",
+            "expr": "ip_country"
+          },
+          {
+            "name": "card_type",
+            "expr": "card_type"
+          },
+          {
+            "name": "merchant_risk_level",
+            "expr": "merchant_risk_level"
+          },
+          {
+            "name": "country_mismatch",
+            "expr": "country_mismatch"
+          },
+          {
+            "name": "country_mismatch_label",
+            "expr": "CASE WHEN country_mismatch = 1 THEN 'Mismatch' ELSE 'Match' END"
+          },
+          {
+            "name": "fraud_prediction",
+            "expr": "fraud_prediction"
+          },
+          {
+            "name": "bucket_15m",
+            "expr": "bucket_15m"
+          }
+        ],
+        "measures": [
+          {
+            "name": "transactions_processed",
+            "expr": "COUNT(*)",
+            "displayName": "Transactions Processed"
+          },
+          {
+            "name": "fraud_flagged",
+            "expr": "COUNT(*) FILTER (WHERE fraud_prediction = 1)",
+            "displayName": "Fraud Flagged"
+          },
+          {
+            "name": "fraud_rate",
+            "expr": "CASE WHEN MEASURE(transactions_processed) = 0 THEN 0 ELSE MEASURE(fraud_flagged) * 1.0 / MEASURE(transactions_processed) END",
+            "displayName": "Fraud Rate",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "amount_flagged_fraud",
+            "expr": "COALESCE(SUM(transaction_amount) FILTER (WHERE fraud_prediction = 1), 0)",
+            "displayName": "Amount Flagged as Fraud",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "transactions_last_hour",
+            "expr": "COUNT(*) FILTER (WHERE transaction_time >= current_timestamp() - INTERVAL 1 HOUR)",
+            "displayName": "Transactions Processed Last 1 Hour"
+          },
+          {
+            "name": "fraud_flagged_last_hour",
+            "expr": "COUNT(*) FILTER (WHERE fraud_prediction = 1 AND transaction_time >= current_timestamp() - INTERVAL 1 HOUR)",
+            "displayName": "Fraud Flagged Last 1 Hour"
+          },
+          {
+            "name": "fraud_rate_last_hour",
+            "expr": "CASE WHEN MEASURE(transactions_last_hour) = 0 THEN 0 ELSE MEASURE(fraud_flagged_last_hour) * 1.0 / MEASURE(transactions_last_hour) END",
+            "displayName": "Fraud Rate Last 1 Hour",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "amount_flagged_fraud_last_hour",
+            "expr": "COALESCE(SUM(transaction_amount) FILTER (WHERE fraud_prediction = 1 AND transaction_time >= current_timestamp() - INTERVAL 1 HOUR), 0)",
+            "displayName": "Amount Flagged as Fraud Last 1 Hour",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "transactions_today",
+            "expr": "COUNT(*) FILTER (WHERE transaction_date = current_date())",
+            "displayName": "Transactions Processed Today"
+          },
+          {
+            "name": "fraud_flagged_today",
+            "expr": "COUNT(*) FILTER (WHERE fraud_prediction = 1 AND transaction_date = current_date())",
+            "displayName": "Fraud Flagged Today"
+          },
+          {
+            "name": "fraud_rate_today",
+            "expr": "CASE WHEN MEASURE(transactions_today) = 0 THEN 0 ELSE MEASURE(fraud_flagged_today) * 1.0 / MEASURE(transactions_today) END",
+            "displayName": "Fraud Rate Today",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "amount_flagged_fraud_today",
+            "expr": "COALESCE(SUM(transaction_amount) FILTER (WHERE fraud_prediction = 1 AND transaction_date = current_date()), 0)",
+            "displayName": "Amount Flagged as Fraud Today",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "minutes_since_last_transaction",
+            "expr": "GREATEST(COALESCE(FLOOR((UNIX_TIMESTAMP(current_timestamp()) - UNIX_TIMESTAMP(MAX(transaction_time))) / 60), 0), 0)",
+            "displayName": "Minutes Since Last Transaction"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fraud_flagged_transactions",
+      "displayName": "fraud_flagged_transactions",
+      "queryLines": [
+        "SELECT\n",
+        "  transaction_id,\n",
+        "  customer_id,\n",
+        "  merchant_id,\n",
+        "  transaction_time,\n",
+        "  transaction_amount,\n",
+        "  transaction_type,\n",
+        "  country,\n",
+        "  ip_country,\n",
+        "  fraud_prediction\n",
+        "FROM\n",
+        "  credit_transactions.gold.scored_transactions\n",
+        "WHERE\n",
+        "  fraud_prediction = 1\n",
+        "  AND transaction_time >= current_timestamp() - INTERVAL 1 DAY\n",
+        "ORDER BY\n",
+        "  transaction_time DESC\n",
+        "LIMIT 500"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "5ecf6512",
+      "displayName": "velocity alerts",
+      "layout": [
+        {
+          "widget": {
+            "name": "active_velocity_alerts",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "f0f7bc5c",
+                  "fields": [
+                    {
+                      "name": "measure(alert_count)",
+                      "expression": "MEASURE(`alert_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Active Velocity Alerts",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(alert_count)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "flagged_transactions",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "f0f7bc5c",
+                  "fields": [
+                    {
+                      "name": "measure(total_transactions_flagged)",
+                      "expression": "MEASURE(`total_transactions_flagged`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Flagged Transactions"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_transactions_flagged)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "alerts_by_credit_band",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "f0f7bc5c",
+                  "fields": [
+                    {
+                      "name": "credit_score_band",
+                      "expression": "`credit_score_band`"
+                    },
+                    {
+                      "name": "measure(alert_count)",
+                      "expression": "MEASURE(`alert_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Alerts by Credit Score Band"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "credit_score_band",
+                  "displayName": "credit_score_band",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(alert_count)",
+                  "displayName": "alert_count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "credit_score_band",
+                  "displayName": "credit_score_band",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 6,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "velocity_alert_details",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "f0f7bc5c",
+                  "fields": [
+                    {
+                      "name": "customer_id",
+                      "expression": "`customer_id`"
+                    },
+                    {
+                      "name": "customer_credit_score",
+                      "expression": "`customer_credit_score`"
+                    },
+                    {
+                      "name": "transaction_count",
+                      "expression": "`transaction_count`"
+                    },
+                    {
+                      "name": "high_frequency_flag",
+                      "expression": "`high_frequency_flag`"
+                    },
+                    {
+                      "name": "window_end",
+                      "expression": "`window_end`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Velocity Alert Details"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "customer_id"
+                  },
+                  {
+                    "fieldName": "customer_credit_score"
+                  },
+                  {
+                    "fieldName": "transaction_count"
+                  },
+                  {
+                    "fieldName": "high_frequency_flag"
+                  },
+                  {
+                    "fieldName": "window_end"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "054af8f9",
+      "displayName": "fraud alert",
+      "layout": [
+        {
+          "widget": {
+            "name": "fraud_alert_header_last_hour",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Fraud Alerts — September 1, 2026\n",
+                "### Last 1 Hour"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "transactions_processed_last_hour",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "measure(transactions_last_hour)",
+                      "expression": "MEASURE(`transactions_last_hour`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Transactions Processed (1h)",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(transactions_last_hour)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "fraud_flagged_last_hour",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "measure(fraud_flagged_last_hour)",
+                      "expression": "MEASURE(`fraud_flagged_last_hour`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Fraud Flagged (1h)",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(fraud_flagged_last_hour)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "fraud_rate_last_hour",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "measure(fraud_rate_last_hour)",
+                      "expression": "MEASURE(`fraud_rate_last_hour`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Fraud Rate (1h)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(fraud_rate_last_hour)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "amount_flagged_last_hour",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "measure(amount_flagged_fraud_last_hour)",
+                      "expression": "MEASURE(`amount_flagged_fraud_last_hour`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Amount Flagged (1h)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(amount_flagged_fraud_last_hour)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "minutes_since_last_transaction",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "measure(minutes_since_last_transaction)",
+                      "expression": "MEASURE(`minutes_since_last_transaction`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Minutes Since Last Transaction"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(minutes_since_last_transaction)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "fraud_alert_header_today",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Today"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "transactions_processed_today",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "measure(transactions_today)",
+                      "expression": "MEASURE(`transactions_today`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Transactions Processed (Today)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(transactions_today)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "fraud_flagged_today",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "measure(fraud_flagged_today)",
+                      "expression": "MEASURE(`fraud_flagged_today`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Fraud Flagged (Today)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(fraud_flagged_today)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "fraud_rate_today",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "measure(fraud_rate_today)",
+                      "expression": "MEASURE(`fraud_rate_today`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Fraud Rate (Today)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(fraud_rate_today)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "amount_flagged_today",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "measure(amount_flagged_fraud_today)",
+                      "expression": "MEASURE(`amount_flagged_fraud_today`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Amount Flagged (Today)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(amount_flagged_fraud_today)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "transaction_volume_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "bucket_15m",
+                      "expression": "`bucket_15m`"
+                    },
+                    {
+                      "name": "measure(transactions_processed)",
+                      "expression": "MEASURE(`transactions_processed`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Transaction Volume Over Time",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "bucket_15m",
+                  "format": {
+                    "type": "date-time",
+                    "date": "none",
+                    "time": "locale-hour-minute"
+                  },
+                  "displayName": "bucket_15m",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(transactions_processed)",
+                  "displayName": "transactions_processed",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "fraud_rate_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "bucket_15m",
+                      "expression": "`bucket_15m`"
+                    },
+                    {
+                      "name": "measure(fraud_rate)",
+                      "expression": "MEASURE(`fraud_rate`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Fraud Rate Over Time",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "bucket_15m",
+                  "format": {
+                    "type": "date-time",
+                    "date": "none",
+                    "time": "locale-hour-minute"
+                  },
+                  "displayName": "bucket_15m",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(fraud_rate)",
+                  "displayName": "fraud_rate",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 9,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "fraud_rate_by_transaction_type",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "transaction_type",
+                      "expression": "`transaction_type`"
+                    },
+                    {
+                      "name": "measure(fraud_rate_last_hour)",
+                      "expression": "MEASURE(`fraud_rate_last_hour`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Fraud Rate by Transaction Type"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "transaction_type",
+                  "displayName": "transaction_type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(fraud_rate_last_hour)",
+                  "displayName": "fraud_rate_last_hour",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "transaction_type",
+                  "displayName": "transaction_type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 6,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "fraud_rate_by_card_type",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "card_type",
+                      "expression": "`card_type`"
+                    },
+                    {
+                      "name": "measure(fraud_rate_last_hour)",
+                      "expression": "MEASURE(`fraud_rate_last_hour`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Fraud Rate by Card Type"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "card_type",
+                  "displayName": "card_type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(fraud_rate_last_hour)",
+                  "displayName": "fraud_rate_last_hour",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "card_type",
+                  "displayName": "card_type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 14,
+            "width": 6,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "fraud_rate_by_merchant_risk",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "merchant_risk_level",
+                      "expression": "`merchant_risk_level`"
+                    },
+                    {
+                      "name": "measure(fraud_rate_last_hour)",
+                      "expression": "MEASURE(`fraud_rate_last_hour`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Fraud Rate by Merchant Risk Level"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "merchant_risk_level",
+                  "displayName": "merchant_risk_level",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(fraud_rate_last_hour)",
+                  "displayName": "fraud_rate_last_hour",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "merchant_risk_level",
+                  "displayName": "merchant_risk_level",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 6,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "fraud_rate_by_country_mismatch",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_realtime_monitoring",
+                  "fields": [
+                    {
+                      "name": "country_mismatch_label",
+                      "expression": "`country_mismatch_label`"
+                    },
+                    {
+                      "name": "measure(fraud_rate_last_hour)",
+                      "expression": "MEASURE(`fraud_rate_last_hour`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Fraud Rate by Country Mismatch"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "country_mismatch_label",
+                  "displayName": "country_mismatch_label",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(fraud_rate_last_hour)",
+                  "displayName": "fraud_rate_last_hour",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "country_mismatch_label",
+                  "displayName": "country_mismatch_label",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 18,
+            "width": 6,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "flagged_transactions_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fraud_flagged_transactions",
+                  "fields": [
+                    {
+                      "name": "transaction_id",
+                      "expression": "`transaction_id`"
+                    },
+                    {
+                      "name": "customer_id",
+                      "expression": "`customer_id`"
+                    },
+                    {
+                      "name": "merchant_id",
+                      "expression": "`merchant_id`"
+                    },
+                    {
+                      "name": "transaction_time",
+                      "expression": "`transaction_time`"
+                    },
+                    {
+                      "name": "transaction_amount",
+                      "expression": "`transaction_amount`"
+                    },
+                    {
+                      "name": "transaction_type",
+                      "expression": "`transaction_type`"
+                    },
+                    {
+                      "name": "country",
+                      "expression": "`country`"
+                    },
+                    {
+                      "name": "ip_country",
+                      "expression": "`ip_country`"
+                    },
+                    {
+                      "name": "fraud_prediction",
+                      "expression": "`fraud_prediction`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Flagged Transactions"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "transaction_id"
+                  },
+                  {
+                    "fieldName": "customer_id"
+                  },
+                  {
+                    "fieldName": "merchant_id"
+                  },
+                  {
+                    "fieldName": "transaction_time"
+                  },
+                  {
+                    "fieldName": "transaction_amount"
+                  },
+                  {
+                    "fieldName": "transaction_type"
+                  },
+                  {
+                    "fieldName": "country"
+                  },
+                  {
+                    "fieldName": "ip_country"
+                  },
+                  {
+                    "fieldName": "fraud_prediction"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 22,
+            "width": 12,
+            "height": 8
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "locale": "en-AU",
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#F5F7FA",
+        "dark": "#111827"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#1F2937"
+      },
+      "widgetBorderColor": {
+        "light": "#D0D7E2",
+        "dark": "#374151"
+      },
+      "fontColor": {
+        "light": "#1F2937",
+        "dark": "#F3F4F6"
+      },
+      "selectionColor": {
+        "light": "#1F4E79",
+        "dark": "#60A5FA"
+      },
+      "visualizationColors": [
+        "#1F4E79",
+        "#5B6B7A",
+        "#8B1E3F",
+        "#6B7280",
+        "#2F6B5F",
+        "#A67C52"
+      ],
+      "widgetHeaderAlignment": "LEFT",
+      "fontFamily": "Inter",
+      "textBoxVerticalAlign": "VERTICAL_ALIGN_TOP",
+      "widgetPadding": 16,
+      "widgetMargin": 8,
+      "widgetCornerRadius": 8,
+      "widgetShadow": 10,
+      "continuousGradient": {
+        "lightMode": {
+          "colorScheme": "blues"
+        },
+        "darkMode": {
+          "colorScheme": "blues"
+        }
+      },
+      "fontSettings": {
+        "base": {
+          "fontFamily": "Inter",
+          "fontColor": {
+            "light": "#1F2937",
+            "dark": "#E5E7EB"
+          },
+          "fontSize": 13,
+          "fontWeight": 400
+        },
+        "widgetTitle": {
+          "fontFamily": "Inter",
+          "textCase": "TEXT_CASE_UNSPECIFIED",
+          "fontColor": {
+            "light": "#111827",
+            "dark": "#F9FAFB"
+          },
+          "fontSize": 15,
+          "fontWeight": 600
+        },
+        "widgetDescription": {
+          "fontFamily": "Inter",
+          "fontColor": {
+            "light": "#6B7280",
+            "dark": "#9CA3AF"
+          },
+          "fontSize": 12,
+          "fontWeight": 400
+        },
+        "fieldTitle": {
+          "fontFamily": "Inter",
+          "textCase": "TEXT_CASE_UPPERCASE",
+          "fontColor": {
+            "light": "#4B5563",
+            "dark": "#D1D5DB"
+          },
+          "fontSize": 12,
+          "fontWeight": 500
+        },
+        "fieldValue": {
+          "fontFamily": "Inter",
+          "fontColor": {
+            "light": "#111827",
+            "dark": "#F9FAFB"
+          },
+          "fontSize": 14,
+          "fontWeight": 600
+        }
+      },
+      "gridLineColor": {
+        "light": "#E5E7EB",
+        "dark": "#374151"
+      },
+      "axisLineColor": {
+        "light": "#9CA3AF",
+        "dark": "#6B7280"
+      }
+    },
+    "applyModeEnabled": false
+  }
+}

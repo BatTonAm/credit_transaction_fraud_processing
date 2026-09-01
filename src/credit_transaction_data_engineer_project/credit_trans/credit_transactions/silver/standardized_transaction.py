@@ -1,11 +1,12 @@
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, IntegerType
-from pyspark.sql.functions import col, from_json, to_timestamp, hour, weekday, broadcast
+from pyspark.sql.functions import col, from_json, to_timestamp, hour, weekday, broadcast, to_date
 from pyspark.sql.dataframe import DataFrame
 from pyspark import pipelines as dp
 
 @dp.table(
     name="credit_transactions.silver.credit_transactions",
     comment="standardized credit transactions",
+    partition_cols=["transaction_date"],
     table_properties={
         "delta.autoOptimize.optimizeWrite": "true",
         "delta.autoOptimize.autoCompact": "true"})
@@ -39,6 +40,7 @@ def silver_credit_transactions() -> DataFrame:
 
     transform_cols={
     "transaction_time": to_timestamp("transaction_time"),
+    "transaction_date": to_date(col("transaction_time")),
     "transaction_hour": hour(col("transaction_time")),
     "transaction_dayofweek": weekday(col("transaction_time")),
     "country_mismatch": (col("ip_country")!=col("country")).cast("int")
