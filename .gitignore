@@ -8,3 +8,4 @@ src/credit_transaction_data_engineer_project/fraud_model/*.pkl
 src/credit_transaction_data_engineer_project/fraud_model/threshold.json
 dist/
 src/credit_transaction_data_engineer_project/fraud_model/input_example.csv
+src/credit_transaction_data_engineer_project/fraud_model/sample_data.csv
