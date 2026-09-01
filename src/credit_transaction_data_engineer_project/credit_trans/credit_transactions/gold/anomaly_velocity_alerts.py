@@ -12,7 +12,6 @@ from pyspark import pipelines as dp
 )
 def customer_velocity_alerts() -> DataFrame:
     df = dp.read_stream("credit_transactions.silver.credit_transactions")
-
     veloc_alert= (df
         .withWatermark("transaction_time", "1 minute")
         .groupBy(
@@ -28,6 +27,6 @@ def customer_velocity_alerts() -> DataFrame:
             "customer_id",
             "transaction_count",
             "high_frequency_flag",
-        )
+        ).filter(col("high_frequency_flag")=="true")
     )
     return veloc_alert
