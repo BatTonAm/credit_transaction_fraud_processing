@@ -1,12 +1,18 @@
 bundle:
   name: credit-transaction-fraud-detection
 
+variables:
+  workspace_host:
+    description: Databricks workspace URL
+  stall_check_notification_email:
+    description: Email address notified when the streaming pipeline stalls
+
 targets:
   dev:
     mode: development
     default: true
     workspace:
-      host: https://redacted-workspace.1.azuredatabricks.net
+      host: ${var.workspace_host}
 
 include:
   - resources/*.yml

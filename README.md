@@ -28,8 +28,6 @@ Two Databricks Lakeview dashboards were built on top of the gold layer. The firs
 
 ![Business metrics dashboard](images/dashboard-business-metrics.png)
 
-Full resolution exports are available as [dashboard-fraud-metrics.pdf](images/dashboard-fraud-metrics.pdf) and [dashboard-business-metrics.pdf](images/dashboard-business-metrics.pdf).
-
 Transaction volume grew steadily over the observed period as the producer throughput increased, rising from a small initial test run to over thirty thousand transactions in the most recent day, with total volume reaching approximately eighteen million dollars. The count of active customers tracks closely with total transaction volume each day, which indicates that activity is broadly distributed across the customer base rather than concentrated among a small number of repeat customers. Average ticket size remained stable at roughly five hundred and ninety dollars across the period, consistent with the fixed pricing ranges configured per merchant category, and spending is split close to evenly across credit card, debit card and digital wallet.
 
 The daily fraud rate ranged between two and eleven percent across the observed days. This volatility is expected given the size of each daily sample and the behaviour of the classifier, rather than an indication of a fault in the pipeline.
@@ -37,8 +35,6 @@ The daily fraud rate ranged between two and eleven percent across the observed d
 ### Real time fraud and velocity monitoring
 
 ![Real time monitoring dashboard](images/dashboard-realtime-monitoring.png)
-
-Full resolution export is available as [dashboard-realtime-monitoring.pdf](images/dashboard-realtime-monitoring.pdf).
 
 The breakdown panels on this dashboard identify which fields carry the strongest fraud signal. The clearest and most consistent separation appears between transactions where the IP address country matches the billing country and those where it does not, with the mismatched group showing a fraud rate many times higher than the matched group. Merchant risk classification shows a similar pattern, with high risk merchants producing a materially higher flagged rate than medium or low risk merchants. Transaction channel and card type show comparatively modest differentiation, suggesting these fields act as weaker, secondary signals relative to geographic mismatch and merchant risk tier.
 
