@@ -15,7 +15,7 @@ resources:
             no_alert_for_skipped_runs: false
           run_if: ALL_SUCCESS
           spark_python_task:
-            python_file: /Workspace/Users/dungphamvan2709@gmail.com/Credit-Transaction-Data-Engineer-Project/src/credit_transaction_data_engineer_project/credit_trans/kafka_stall_check/kafka_stall_check.py
+            python_file: /Workspace/Users/sampleemail@gmail.com/credit_transaction_fraud_processing/src/credit_transaction_fraud_process/credit_trans/kafka_stall_check/kafka_stall_check.py
           timeout_seconds: 0
           webhook_notifications: {}
       email_notifications:

@@ -13,7 +13,7 @@ resources:
             no_alert_for_skipped_runs: false
           run_if: ALL_SUCCESS
           spark_python_task:
-            python_file: /Workspace/Users/dungphamvan2709@gmail.com/Credit-Transaction-Data-Engineer-Project/src/credit_transaction_data_engineer_project/credit_trans/batch_daily_metrics/gold/daily_metrics.py
+            python_file: /Workspace/Users/sampleemail@gmail.com/credit_transaction_fraud_processing/src/credit_transaction_fraud_process/credit_trans/batch_daily_metrics/gold/daily_metrics.py
           timeout_seconds: 0
           webhook_notifications: {}
         - task_key: daily_fraud_metrics
@@ -26,7 +26,7 @@ resources:
             no_alert_for_skipped_runs: false
           run_if: ALL_SUCCESS
           spark_python_task:
-            python_file: /Workspace/Users/dungphamvan2709@gmail.com/Credit-Transaction-Data-Engineer-Project/src/credit_transaction_data_engineer_project/credit_trans/batch_daily_metrics/gold/daily_fraud_rates.py
+            python_file: /Workspace/Users/sampleemail@gmail.com/credit_transaction_fraud_processing/src/credit_transaction_fraud_process/credit_trans/batch_daily_metrics/gold/daily_fraud_rates.py
           timeout_seconds: 0
           webhook_notifications: {}
       email_notifications:

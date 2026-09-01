@@ -4,7 +4,7 @@ resources:
       name: credit_transactions
       libraries:
         - glob:
-            include: ../src/credit_transaction_data_engineer_project/credit_trans/credit_trans/**
+            include: ../src/credit_transaction_fraud_processing/credit_trans/credit_trans/**
       catalog: credit_transactions
       channel: CURRENT
       continuous: false
@@ -13,6 +13,6 @@ resources:
           - xgboost
           - scikit-learn
       photon: true
-      root_path: ../src/credit_transaction_data_engineer_project/credit_trans/credit_trans
+      root_path: ../src/credit_transaction_fraud_processing/credit_trans/credit_trans
       schema: default
       serverless: true

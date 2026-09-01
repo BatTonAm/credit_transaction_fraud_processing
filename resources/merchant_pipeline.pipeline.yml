@@ -4,11 +4,11 @@ resources:
       name: merchant_pipeline
       libraries:
         - glob:
-            include: ../src/credit_transaction_data_engineer_project/credit_trans/merchant_pipeline/**
+            include: ../src/credit_transaction_fraud_processing/credit_trans/merchant_pipeline/**
       catalog: credit_transactions
       channel: CURRENT
       continuous: false
       photon: true
-      root_path: ../src/credit_transaction_data_engineer_project/credit_trans/merchant_pipeline
+      root_path: ../src/credit_transaction_fraud_processing/credit_trans/merchant_pipeline
       schema: silver
       serverless: true

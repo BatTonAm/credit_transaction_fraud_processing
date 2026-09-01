@@ -4,11 +4,11 @@ resources:
       name: customer pipeline
       libraries:
         - glob:
-            include: "../src/credit_transaction_data_engineer_project/credit_trans/customer pipeline/**"
+            include: "../src/credit_transaction_fraud_processing/credit_trans/customer pipeline/**"
       catalog: credit_transactions
       channel: CURRENT
       continuous: false
       photon: true
-      root_path: "../src/credit_transaction_data_engineer_project/credit_trans/customer pipeline"
+      root_path: "../src/credit_transaction_fraud_processing/credit_trans/customer pipeline"
       schema: gold
       serverless: true
