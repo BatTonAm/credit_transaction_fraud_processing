@@ -1,0 +1,14 @@
+resources:
+  pipelines:
+    customer_pipeline:
+      name: customer pipeline
+      libraries:
+        - glob:
+            include: "../src/credit_transaction_data_engineer_project/credit_trans/customer pipeline/**"
+      catalog: credit_transactions
+      channel: CURRENT
+      continuous: false
+      photon: true
+      root_path: "../src/credit_transaction_data_engineer_project/credit_trans/customer pipeline"
+      schema: gold
+      serverless: true

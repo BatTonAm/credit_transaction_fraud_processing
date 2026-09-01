@@ -1,0 +1,18 @@
+resources:
+  pipelines:
+    credit_transactions:
+      name: credit_transactions
+      libraries:
+        - glob:
+            include: ../src/credit_transaction_data_engineer_project/credit_trans/credit_trans/**
+      catalog: credit_transactions
+      channel: CURRENT
+      continuous: false
+      environment:
+        dependencies:
+          - xgboost
+          - scikit-learn
+      photon: true
+      root_path: ../src/credit_transaction_data_engineer_project/credit_trans/credit_trans
+      schema: default
+      serverless: true

@@ -1,0 +1,23 @@
+resources:
+  jobs:
+    credit_transactions_job:
+      name: credit_transactions
+      tasks:
+        - task_key: pipeline-task-af26262e-1a29-4f64-94e3-9f568436b6d9
+          disabled: false
+          email_notifications: {}
+          pipeline_task:
+            pipeline_id: af26262e-1a29-4f64-94e3-9f568436b6d9
+          run_if: ALL_SUCCESS
+          timeout_seconds: 0
+      continuous:
+        pause_status: UNPAUSED
+      email_notifications:
+        on_failure:
+          - dungphamvan2709@gmail.com
+      max_concurrent_runs: 1
+      notification_settings:
+        no_alert_for_skipped_runs: true
+      performance_target: PERFORMANCE_OPTIMIZED
+      timeout_seconds: 0
+      webhook_notifications: {}

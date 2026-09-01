@@ -1,0 +1,37 @@
+resources:
+  jobs:
+    kafka_health_check:
+      name: kafka_health_check
+      tasks:
+        - task_key: stall_anouncement
+          disabled: false
+          email_notifications:
+            on_failure:
+              - redacted@example.com
+          environment_key: Default
+          notification_settings:
+            alert_on_last_attempt: false
+            no_alert_for_canceled_runs: false
+            no_alert_for_skipped_runs: false
+          run_if: ALL_SUCCESS
+          spark_python_task:
+            python_file: /Workspace/Users/dungphamvan2709@gmail.com/Credit-Transaction-Data-Engineer-Project/src/credit_transaction_data_engineer_project/credit_trans/kafka_stall_check/kafka_stall_check.py
+          timeout_seconds: 0
+          webhook_notifications: {}
+      email_notifications:
+        no_alert_for_skipped_runs: false
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "5"
+      max_concurrent_runs: 1
+      performance_target: PERFORMANCE_OPTIMIZED
+      queue:
+        enabled: true
+      timeout_seconds: 0
+      trigger:
+        pause_status: UNPAUSED
+        periodic:
+          interval: 30
+          unit: MINUTES
+      webhook_notifications: {}

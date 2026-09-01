@@ -1,0 +1,47 @@
+resources:
+  jobs:
+    daily_batch:
+      name: daily_batch
+      tasks:
+        - task_key: daily_business_metrics
+          disabled: false
+          email_notifications: {}
+          environment_key: Default
+          notification_settings:
+            alert_on_last_attempt: false
+            no_alert_for_canceled_runs: false
+            no_alert_for_skipped_runs: false
+          run_if: ALL_SUCCESS
+          spark_python_task:
+            python_file: /Workspace/Users/dungphamvan2709@gmail.com/Credit-Transaction-Data-Engineer-Project/src/credit_transaction_data_engineer_project/credit_trans/batch_daily_metrics/gold/daily_metrics.py
+          timeout_seconds: 0
+          webhook_notifications: {}
+        - task_key: daily_fraud_metrics
+          disabled: false
+          email_notifications: {}
+          environment_key: Default
+          notification_settings:
+            alert_on_last_attempt: false
+            no_alert_for_canceled_runs: false
+            no_alert_for_skipped_runs: false
+          run_if: ALL_SUCCESS
+          spark_python_task:
+            python_file: /Workspace/Users/dungphamvan2709@gmail.com/Credit-Transaction-Data-Engineer-Project/src/credit_transaction_data_engineer_project/credit_trans/batch_daily_metrics/gold/daily_fraud_rates.py
+          timeout_seconds: 0
+          webhook_notifications: {}
+      email_notifications:
+        no_alert_for_skipped_runs: false
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "5"
+      max_concurrent_runs: 1
+      performance_target: PERFORMANCE_OPTIMIZED
+      queue:
+        enabled: true
+      schedule:
+        pause_status: UNPAUSED
+        quartz_cron_expression: 31 0 0 * * ?
+        timezone_id: Australia/Brisbane
+      timeout_seconds: 0
+      webhook_notifications: {}

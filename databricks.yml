@@ -1,0 +1,12 @@
+bundle:
+  name: credit-transaction-fraud-detection
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://redacted-workspace.1.azuredatabricks.net
+
+include:
+  - resources/*.yml
