@@ -56,7 +56,7 @@ The reported fraud rate should be read as the proportion of transactions the mod
 ## Repository layout
 
 ```
-src/credit_transaction_data_engineer_project/
+src/credit_transaction_fraud_process/
   kafka/            local Kafka producer and reference data generation
   fraud_model/       model training, evaluation and MLflow packaging
   credit_trans/       pipeline notebooks synced from Databricks Repos
