@@ -1,6 +1,0 @@
-transaction_amount,transaction_type,payment_method,city,country,ip_country,device_type,operating_system,browser,card_type,card_present,international_transaction,distance_from_home,merchant_risk_level,country_mismatch,transaction_hour,transaction_dayofweek
-72.6,POS,Credit Card,Singapore,Singapore,Singapore,Tablet,iOS,Safari,Visa,1,0,43.75,Low,0,10,1
-79.56,Online,Credit Card,Toronto,Canada,Canada,Mobile,iOS,Safari,Visa,0,0,40.89,Low,0,17,0
-42.25,POS,Debit Card,Toronto,Canada,Canada,Desktop,MacOS,Firefox,American Express,1,0,7.79,Low,0,5,0
-83.1,Online,Credit Card,Vancouver,Canada,Canada,Mobile,iOS,Chrome,Mastercard,0,0,23.27,High,0,22,4
-13.88,ATM,Debit Card,Munich,Germany,Germany,Mobile,iOS,Chrome,American Express,1,0,42.54,Medium,0,19,3
